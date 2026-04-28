@@ -109,7 +109,13 @@ export const getPassport = (item_id)   => api.get(`/dashboard/passport/${item_id
 export const getCertificates     = ()  => api.get('/dashboard/certificates');
 
 // ─── Platform stats ──────────────────────────────────────────────────────────
-
 export const getStats = () => api.get('/stats');
+
+// ─── Payments ─────────────────────────────────────────────────────────────────
+export const createRazorpayOrder = (data) => api.post('/payment/create-order', data);
+export const verifyRazorpayPayment = (data) => api.post('/payment/verify', data);
+
+// ─── Admin ────────────────────────────────────────────────────────────────────
+export const getAdminStats = () => api.get('/admin/stats');
 
 export default api;

@@ -7,6 +7,7 @@ import UploadPage from './pages/UploadPage'
 import DashboardPage from './pages/DashboardPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import AdminPage from './pages/AdminPage'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
+          <Route path="/admin" element={<AdminPage />} />
           <Route path="*" element={
             <div className="flex items-center justify-center min-h-[60vh] text-center pt-24">
               <div>

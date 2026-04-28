@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { ShoppingCart, Tag, Recycle, Heart, Star, Sparkles, UploadCloud, X, RefreshCw, CheckCircle2 } from 'lucide-react';
-import { buyItem, tryOn } from '../api';
+import { buyItem, tryOn, createRazorpayOrder, verifyRazorpayPayment } from '../api';
 
 const DECISION_CONFIG = {
   resell:   { label: 'Resell',    badge: 'badge-resell',    icon: Tag },
@@ -43,11 +43,60 @@ export default function ProductCard({ item, onPurchased }) {
       if (item._id && item._id.toString().startsWith('m')) {
         // Mock item simulation
         await new Promise(resolve => setTimeout(resolve, 800));
-      } else {
-        await buyItem(item._id);
+        setAdded(true);
+        if (onPurchased) onPurchased(item._id);
+        setBuying(false);
+        return;
       }
-      setAdded(true);
-      if (onPurchased) onPurchased(item._id);
+
+      if (item.decision === 'donate' || item.price === 0) {
+        await buyItem(item._id);
+        setAdded(true);
+        if (onPurchased) onPurchased(item._id);
+        setBuying(false);
+      } else {
+        // Razorpay integration
+        const res = await createRazorpayOrder({ amount: item.price, item_ids: [item._id] });
+        const { order, dbOrderId, razorpayKey } = res.data;
+
+        const options = {
+          key: razorpayKey,
+          amount: order.amount,
+          currency: order.currency,
+          name: "EcoWardrobe",
+          description: "Purchase " + (item.brand || item.category),
+          order_id: order.id,
+          handler: async function (response) {
+            try {
+              await verifyRazorpayPayment({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                dbOrderId
+              });
+              setAdded(true);
+              if (onPurchased) onPurchased(item._id);
+            } catch (err) {
+              setError("Payment verification failed");
+            }
+          },
+          prefill: {
+            name: "Customer",
+            email: "customer@example.com",
+            contact: "9999999999"
+          },
+          theme: {
+            color: "#16a34a"
+          }
+        };
+
+        const rzp = new window.Razorpay(options);
+        rzp.on('payment.failed', function (response){
+          setError(response.error.description);
+        });
+        rzp.open();
+        setBuying(false);
+      }
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to add to cart');
     } finally {

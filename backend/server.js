@@ -8,6 +8,10 @@ const apiRoutes = require('./routes/api');
 const dashboardRoutes = require('./routes/dashboard');
 const authRoutes = require('./routes/authRoutes');
 const tryonRoutes = require('./routes/tryonRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const User = require('./models/User');
+const bcrypt = require('bcryptjs');
 
 // Ensure uploads folder exists
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -31,6 +35,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api', apiRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/tryon', tryonRoutes);
+app.use('/api/payment', paymentRoutes);
+app.use('/api/admin', adminRoutes);
 
 
 // Health check
@@ -50,9 +56,31 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(`\n🌿 EcoWardrobe Backend running on http://localhost:${PORT}`);
   console.log(`📦 API Base: http://localhost:${PORT}/api`);
+  
+  // Initialize Admin User
+  try {
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (adminEmail && adminPassword) {
+      const existingAdmin = await User.findOne({ email: adminEmail });
+      if (!existingAdmin) {
+        const hashedPassword = await bcrypt.hash(adminPassword, 10);
+        await User.create({
+          user_id: 'admin_1',
+          name: 'Admin',
+          email: adminEmail,
+          password: hashedPassword,
+          role: 'admin'
+        });
+        console.log('✅ Default Admin user created');
+      }
+    }
+  } catch (error) {
+    console.error('Failed to initialize admin user:', error);
+  }
 });
 
 module.exports = app;
