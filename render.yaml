@@ -1,41 +1,40 @@
 services:
   - type: web
-      name: ecowardrobe-backend
-          env: node
-              rootDir: backend
-                  buildCommand: npm install
-                      startCommand: node server.js
-                          envVars:
-                                - key: NODE_ENV
-                                        value: production
-                                              - key: ML_API_URL
-                                                      value: https://ecowardrobe-ml.onrender.com
-                                                            - key: FASTAPI_URL
-                                                                    value: https://ecowardrobe-tryon.onrender.com/tryon
-                                                                          - key: MONGO_URI
-                                                                                  sync: false
-                                                                                        - key: JWT_SECRET
-                                                                                                sync: false
-                                                                                                      - key: RAZORPAY_KEY_ID
-                                                                                                              sync: false
-                                                                                                                    - key: RAZORPAY_KEY_SECRET
-                                                                                                                            sync: false
-                                                                                                                                  - key: ADMIN_EMAIL
-                                                                                                                                          sync: false
-                                                                                                                                                - key: ADMIN_PASSWORD
-                                                                                                                                                        sync: false
-                                                                                                                                                        
-                                                                                                                                                          - type: web
-                                                                                                                                                              name: ecowardrobe-ml
-                                                                                                                                                                  env: python
-                                                                                                                                                                      rootDir: ml_service
-                                                                                                                                                                          buildCommand: pip install -r requirements.txt
-                                                                                                                                                                              startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
-                                                                                                                                                                              
-                                                                                                                                                                                - type: web
-                                                                                                                                                                                    name: ecowardrobe-tryon
-                                                                                                                                                                                        env: python
-                                                                                                                                                                                            rootDir: tryon-service
-                                                                                                                                                                                                buildCommand: pip install -r requirements.txt
-                                                                                                                                                                                                    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
-                                                                                                                                                                                                    
+    name: ecowardrobe-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: ML_API_URL
+        value: https://ecowardrobe-ml.onrender.com
+      - key: FASTAPI_URL
+        value: https://ecowardrobe-tryon.onrender.com/tryon
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+  - type: web
+    name: ecowardrobe-ml
+    env: python
+    rootDir: ml_service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+
+  - type: web
+    name: ecowardrobe-tryon
+    env: python
+    rootDir: tryon-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
